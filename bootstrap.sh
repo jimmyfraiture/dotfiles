@@ -45,6 +45,20 @@ else
     cd ~/dotfiles || { echo "❌ Error: Failed to change to ~/dotfiles directory."; exit 1; }
 fi
 
+# Install Homebrew (if missing) and 1Password CLI
+if ! command -v brew >/dev/null 2>&1; then
+    echo "🍺 Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    echo "✅ Homebrew installed."
+    # Ensure brew is on PATH for Apple Silicon
+    if [ -d "/opt/homebrew/bin" ]; then
+      eval "$('/opt/homebrew/bin/brew' shellenv)"
+    fi
+fi
+
+echo "🔐 Ensuring 1Password CLI is installed via Homebrew..."
+brew list 1password-cli >/dev/null 2>&1 || brew install 1password-cli
+
 # Backup existing .zshenv
 if [ -f "$HOME/.zshenv" ]; then
     echo "🛡 Backing up existing .zshenv..."
@@ -60,3 +74,6 @@ if ! nix run --extra-experimental-features nix-command --extra-experimental-feat
 fi
 
 echo "✅ Setup complete! You can restart your shell or run 'source ~/.zshrc'"
+
+echo "ℹ️  To allow non-interactive secret reads, open 1Password → Settings → Developer → enable 'Integrate with 1Password CLI'."
+echo "   Or sign in via terminal: 'op account add' then 'op signin'."
